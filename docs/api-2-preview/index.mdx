@@ -79,7 +79,7 @@ int32_t cleanup_all_windows(void);
 
 ## 本地协议服务
 
-### 设置本地协议服务路径（set_protocol_service_path） {#set-protocol-service-path}
+### 设置本地协议服务路径
 
 **用途**：将本地目录或 JAPK 资源包注册为 JadeView 内置访问的根目录，并生成一个协议 URL。页面里可以用这个地址加载 JS/CSS/图片，就像小型静态站点，而不必再自己起 Node 或 IIS。
 
@@ -135,7 +135,7 @@ int32_t set_protocol_service_path(
 
 ## 核心结构体
 
-### 窗口选项结构（`WebViewWindowOptions`） {#webview-window-options}
+### 窗口选项结构（`WebViewWindowOptions`）
 
 **用途**：描述**第一个画面长什么样、能不能拖大小、在屏幕哪出现**。字段顺序必须与 **`JadeView.h` 中结构体声明**一致，少填、多填或类型错位都会导致**静默读错内存**。
 
@@ -166,7 +166,7 @@ int32_t set_protocol_service_path(
 
 ---
 
-### 网页行为结构（`WebViewSettings`） {#webview-settings}
+### 网页行为结构（`WebViewSettings`）
 
 **用途**：控制 **WebView 里网页的行为**（自动播放、右键、UA 等）。传 `NULL` 表示全用默认。
 
