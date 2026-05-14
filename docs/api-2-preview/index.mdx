@@ -77,6 +77,43 @@ int32_t cleanup_all_windows(void);
 
 ---
 
+## 本地协议服务
+
+### 设置本地协议服务路径（set_protocol_service_path） {#set-protocol-service-path}
+
+**用途**：将本地目录或 JAPK 资源包注册为 JadeView 内置访问的根目录，并生成一个协议 URL。页面里可以用这个地址加载 JS/CSS/图片，就像小型静态站点，而不必再自己起 Node 或 IIS。
+
+```c
+int32_t set_protocol_service_path(
+  const char* root_path,
+  char* url_buffer,
+  size_t buffer_size
+);
+```
+
+**参数：**
+
+- `root_path` `string` - 本地静态资源根。**两种形式**：
+  - **目录**：指向包含 `index.html` 等前端产物的文件夹路径；
+  - **`.japk` 文件**：指向磁盘上已存在的 JAPK 归档文件。JadeView 会映射该文件并在 `JADE://` 下按**包内相对路径**提供资源（不解压到临时目录）；请求未命中时同样回退到包内的 `index.html`（SPA）。扩展名匹配**不区分大小写**（如 `.JAPK`）。若归档中某些条目为「解包」存储（旁路 `.japk.unpacked` / 等价目录），实现会尝试从磁盘旁路读取对应字节。
+- `url_buffer` `char*` - 输出参数，用于存储生成的协议 URL（NUL 结尾）
+- `buffer_size` `size_t` - `url_buffer` 的字节容量（含结尾 NUL）
+
+**返回值：**
+
+- `1` - 成功
+- `0` - 失败（路径无效、缓冲太小、尚未初始化等）
+
+须在 **`app-ready` 成功之后**再调。
+
+**与旧版 `create_local_server` 的差异**：过去要在参数里单独传 **`appname`**，用来拼内置主机名（如 `http://jade.{appname}/...`）。**2.0** 改为由 **`JadeView_init` 已登记的 `app_name` / `app_signature`** 推导协议身份，因此 C API **少一个参数**，避免与初始化信息不一致。
+
+| 旧 API | 2.0 |
+|--------|-----|
+| `create_local_server(root_path, appname, url_buffer, buffer_size)` | `set_protocol_service_path(root_path, url_buffer, buffer_size)` |
+
+---
+
 ## 版本变化速览
 
 ### 2.0 新增与换名接口（相对旧版）

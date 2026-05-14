@@ -40,7 +40,7 @@ const sidebars = {
     {
       type: 'category',
       label: '插件',
-      items: ['local-server-api', 'plugin-system-api', 'tray-api', 'notification', 'dialog-api'],
+      items: ['plugin-system-api', 'tray-api', 'notification', 'dialog-api'],
     },
     {
       type: 'category',
