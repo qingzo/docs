@@ -12,6 +12,23 @@ JAPK 是 JadeView 专属的应用打包格式，它可以把您的 HTML、CSS、
 - **保护源码**：配合 JadePack 可以对内容进行混淆和签名保护
 
 ---
+### Electron ASAR 与 JadePack 对比
+
+| 特性 | Electron ASAR | JadePack 混淆包 | JadePack 签名包 |
+|------|:---:|:---:|:---:|
+| 打包工具 | `@electron/asar` CLI | JadePack 桌面客户端 | JadePack 桌面客户端 |
+| 文件格式 | ASAR（明文） | JAPK v2 混淆 | JAPK v2 签名 |
+| 内容保护 | ❌ 无 | XOR 混淆 | AES-256-GCM 加密 |
+| 签名验证 | ❌ 不支持 | ❌ 不支持 | ✅ Ed25519 |
+| 防篡改 | ❌ 无 | ❌ 弱 | ✅ 强 |
+| 源码可读 | ✅ 可直接查看 | ❌ 需解混淆 | ❌ 需解密+验签 |
+| 加载方式 | 文件路径 / 内存 | 文件路径 / [内存载入](/v2api/japk-load-memory) | 文件路径 / [内存载入](/v2api/japk-load-memory) |
+| 适用场景 | 开发调试、内部工具 | 基础保护的分发 | 生产环境、商业分发 |
+| 费用 | 免费 | 按月付费 | 按月付费 |
+
+> JadePack 下载与详情见 [JadePack](/v2api/jadepack)。
+
+---
 
 ## JadePack 构建工具
 
@@ -70,72 +87,131 @@ void load_japk_example() {
 
 ---
 
-## 命令构建教程
+## 命令行打包教程（Electron ASAR）
 
-### 前置要求
-- Node.js 14.0 或更高版本
-- npm 或 yarn 包管理器
-- 要打包的应用文件目录
+如果你还没有 Node.js 开发经验，没关系——本节从零开始，一步一步教你用命令行把网页文件打包成 JAPK 文件。
 
-### 安装 Electron ASAR
+### 什么是 ASAR？
 
-全局安装 @electron/asar 工具：
+ASAR（Atom Shell Archive）是一种文件打包格式，它能把一个文件夹里的所有文件（HTML、CSS、JS、图片等）合并成一个单独的文件。这个文件就像 `.zip` 压缩包，区别在于 JadeView 可以直接从里面读取网页，不需要解压。
+
+`@electron/asar` 是一个命令行工具，用来创建和解包 ASAR 文件。它是免费的。
+
+### 第 0 步：安装 Node.js
+
+Node.js 提供了一个叫 `npm` 的命令行工具，我们会用它来安装 `@electron/asar`。
+
+1. 打开浏览器，访问 https://nodejs.org
+2. 下载 **LTS（长期支持版）**，推荐 Windows 用户选 `.msi` 安装包
+3. 双击安装，一路点"下一步"即可（保持默认选项）
+4. 安装完成后，按 `Win + R` 输入 `cmd` 回车，打开命令提示符
+5. 输入以下命令验证安装成功：
+
+```bash
+node --version
+```
+
+如果看到类似 `v20.x.x` 的版本号，说明安装成功。
+
+### 第 1 步：安装打包工具
+
+在命令提示符中输入以下命令（只需执行一次，全局安装后永久可用）：
 
 ```bash
 npm install -g @electron/asar
 ```
 
-或者使用 yarn：
+- `npm install`：让 npm 安装一个工具
+- `-g`：全局安装，安装后在任意目录都能用
+- `@electron/asar`：要安装的工具名称
+
+验证是否安装成功：
 
 ```bash
-yarn global add @electron/asar
+asar --version
 ```
 
-### 构建步骤
+看到版本号即表示 OK。
 
-#### 步骤 1：准备应用文件
+### 第 2 步：准备你的网页项目
 
-例如您的前端文件结构如下：
+把你的网页文件放进一个文件夹。假设你的项目叫 `my-app`，例如如下：
 
 ```
 my-app/
-├── index.html
+├── index.html          ← 入口页面（必须有）
 ├── src/
-│   ├── renderer.js
-│   └── styles.css
+│   ├── renderer.js     ← JS 脚本
+│   └── styles.css      ← 样式文件
 └── assets/
-    └── icon.png
+    └── icon.png        ← 图片资源
 ```
 
-#### 步骤 2：创建 JAPK 包
+:::tip
+**`index.html` 是必需的**，JadeView 加载 JAPK 时会默认打开它，就像浏览器打开网站时找首页一样。
+:::
 
-使用以下命令直接创建 JAPK 包：
+### 第 3 步：打包
+
+在命令提示符中，先进入 `my-app` 所在的目录，然后执行：
 
 ```bash
 asar pack my-app app.japk
 ```
 
-这将创建一个名为 `app.japk` 的文件。
+这句命令的含义：
+- `asar pack`：告诉工具"我要打包"
+- `my-app`：要打包的文件夹名
+- `app.japk`：打包后生成的文件名（可以叫任意名字，后缀 `.japk` 是约定）
 
-### 高级选项
+执行后会在当前目录生成 `app.japk` 文件，这就是你需要的 JAPK 包。
 
-#### 排除特定文件
+### 验证打包结果
 
-使用 `--unpack` 选项排除特定文件：
+想看包里有哪些文件，用以下命令列出包内容：
+
+```bash
+asar list app.japk
+```
+
+会输出类似：
+
+```
+/index.html
+/src/renderer.js
+/src/styles.css
+/assets/icon.png
+```
+
+### 进阶用法
+
+#### 排除某些文件（如 `.node` 原生模块）
+
+某些文件（如 `.node` 原生模块）不能打包，需要留在包外面单独加载：
 
 ```bash
 asar pack my-app app.japk --unpack "*.node"
 ```
 
-这将排除所有 .node 文件，保持它们为未打包状态。
+- `--unpack "*.node"`：所有后缀为 `.node` 的文件不打包，单独放在 `app.japk.unpacked` 文件夹里
 
-#### 指定输出路径
-
-指定 JAPK 文件的输出路径：
+#### 生成到指定目录
 
 ```bash
-asar pack my-app ./output/app.japk
+asar pack my-app ./dist/app.japk
 ```
+
+- 把 `app.japk` 生成到当前目录下的 `dist` 文件夹里
+
+#### 解包（提取包内文件）
+
+如果想还原 JAPK 里的文件：
+
+```bash
+asar extract app.japk ./extracted
+```
+
+- 把 `app.japk` 的内容解压到 `extracted` 文件夹
 
 ### 重要说明
 
@@ -155,21 +231,6 @@ asar pack my-app ./output/app.japk
 
 **推荐做法：** 使用 JadePack 的图形界面构建中心创建签名 JAPK 包，可以提供完整的安全保护、身份验证和完整性校验。
 
-### Electron ASAR 与 JadePack 对比
-
-| 特性 | Electron ASAR | JadePack 混淆包 | JadePack 签名包 |
-|------|:---:|:---:|:---:|
-| 打包工具 | `@electron/asar` CLI | JadePack 桌面客户端 | JadePack 桌面客户端 |
-| 文件格式 | ASAR（明文） | JAPK v2 混淆 | JAPK v2 签名 |
-| 内容保护 | ❌ 无 | XOR 混淆 | AES-256-GCM 加密 |
-| 签名验证 | ❌ 不支持 | ❌ 不支持 | ✅ Ed25519 |
-| 防篡改 | ❌ 无 | ❌ 弱 | ✅ 强 |
-| 源码可读 | ✅ 可直接查看 | ❌ 需解混淆 | ❌ 需解密+验签 |
-| 加载方式 | 文件路径 / 内存 | 文件路径 / [内存载入](/v2api/japk-load-memory) | 文件路径 / [内存载入](/v2api/japk-load-memory) |
-| 适用场景 | 开发调试、内部工具 | 基础保护的分发 | 生产环境、商业分发 |
-| 费用 | 免费 | 按月付费 | 按月付费 |
-
-> JadePack 下载与详情见 [JadePack](/v2api/jadepack)。
 
 ### 相关资源
 
