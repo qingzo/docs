@@ -53,9 +53,14 @@ const sidebars = {
       items: ['context-menu-api', 'context-menu-items'],
     },
     {
-      type: 'category',
-      label: '插件',
-      items: ['tray-api', 'notification'],
+      type: 'doc',
+      id: 'tray-api',
+      label: '托盘Api',
+    },
+    {
+      type: 'doc',
+      id: 'notification',
+      label: '通知Api',
     },
     {
       type: 'doc',
