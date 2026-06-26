@@ -40,7 +40,7 @@ import DocBreadcrumb from '../../components/DocBreadcrumb';
 
 export default memo(function DocumentLayout({ children }: any) {
   const intl = useIntl();
-  const { hash } = useLocation();
+  const { hash, pathname } = useLocation();
   const theme = useTheme() as any;
   const { mobile, laptop } = useResponsive();
 
@@ -61,9 +61,16 @@ export default memo(function DocumentLayout({ children }: any) {
     };
   });
   const fm = useSiteStore((s: any) => s.routeMeta.frontmatter, isEqual);
+  // 404 / 无侧栏数据的路由（NotFound 等）：Sidebar 内部 s.sidebar 为空会 return null，但 aside 仍占位
+  // → 正文偏右。故只有「确有侧栏数据」时才算侧栏适用。
+  const sidebar = useSiteStore((s: any) => s.sidebar, isEqual);
+  const hasSidebarData = Array.isArray(sidebar) && sidebar.length > 0;
+  // SEO（多语言）：hreflang 互链 + og:locale，需要 locales 列表与站点 hostname。
+  const locales = useSiteStore((s: any) => s.siteData?.locales, isEqual);
+  const hostname = useSiteStore((s: any) => siteSelectors.hostname(s));
 
-  // 侧栏是否「适用」（文档页且未在 frontmatter 关闭）—— 决定是否挂载 aside / 是否给左侧占位
-  const sidebarApplicable = page === 'docs' && fm.sidebar !== false;
+  // 侧栏是否「适用」（文档页 + 未在 frontmatter 关闭 + 确有侧栏数据）—— 决定是否挂载 aside / 左侧占位
+  const sidebarApplicable = page === 'docs' && fm.sidebar !== false && hasSidebarData;
   // 是否展开显示（适用 且 非 mobile）；mobile 下保持挂载但宽度动画收起到 0
   const showSidebar = sidebarApplicable && !mobile;
 
@@ -75,8 +82,20 @@ export default memo(function DocumentLayout({ children }: any) {
   const tocWidth = hideToc ? 0 : theme.tocWidth;
   const asideWidth = theme.sidebarWidth;
 
-  const HelmetBlock = useCallback(
-    () => (
+  const HelmetBlock = useCallback(() => {
+    // 把当前路径换算成「目标语言」下的对应路径（用于 hreflang 互链）。
+    const curBase = (locales?.find((l: any) => l.id === intl.locale)?.base || '/').replace(/\/$/, '');
+    const toLocalePath = (targetBase: string) => {
+      let rel = pathname;
+      if (curBase && rel.startsWith(curBase)) rel = rel.slice(curBase.length) || '/';
+      const tb = targetBase === '/' ? '' : targetBase.replace(/\/$/, '');
+      let t = (tb + rel).replace(/\/{2,}/g, '/') || '/';
+      if (t.length > 1 && t.endsWith('/')) t = t.slice(0, -1);
+      return t;
+    };
+    const origin = hostname || 'https://jade.run';
+    const defaultLoc = locales?.[0];
+    return (
       <Helmet>
         <html lang={intl.locale.replace(/-.+$/, '')} />
         {fm.title && <meta content={fm.title} property="og:title" />}
@@ -89,10 +108,21 @@ export default memo(function DocumentLayout({ children }: any) {
         ) : (
           <title>{siteTitle ? `${fm.title}-${siteTitle}` : fm.title}</title>
         )}
+        {/* SEO：当前语言 og:locale + 其它语言 alternate */}
+        <meta content={intl.locale.replace('-', '_')} property="og:locale" />
+        {(locales || [])
+          .filter((l: any) => l.id !== intl.locale)
+          .map((l: any) => (
+            <meta content={l.id.replace('-', '_')} key={l.id} property="og:locale:alternate" />
+          ))}
+        {/* SEO：多语言 hreflang 互链 + x-default（指向默认语言版本） */}
+        {(locales || []).map((l: any) => (
+          <link href={origin + toLocalePath(l.base)} hrefLang={l.id} key={l.id} rel="alternate" />
+        ))}
+        {defaultLoc && <link href={origin + toLocalePath(defaultLoc.base)} hrefLang="x-default" rel="alternate" />}
       </Helmet>
-    ),
-    [intl, fm, siteTitle, page],
-  );
+    );
+  }, [intl, fm, siteTitle, page, locales, hostname, pathname]);
 
   // 处理 hash 滚动（异步 chunk 加载后跳转锚点）—— 与原版一致
   useEffect(() => {
