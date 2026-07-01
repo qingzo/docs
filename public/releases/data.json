@@ -1,6 +1,24 @@
 {
-  "updated_at": "2026-06-28T19:13:13.646Z",
+  "updated_at": "2026-06-30T19:49:45.695Z",
   "releases": [
+    {
+      "tag_name": "v2.3.0-beta.8",
+      "name": "v2.3.0-beta.8 (Build 26F13)",
+      "published_at": "2026-06-29T15:47:25Z",
+      "prerelease": true,
+      "html_url": "https://github.com/JadeViewDocs/JadeView/releases/tag/v2.3.0-beta.8",
+      "gitee_url": "https://gitee.com/ilinxuan/JadeView_library/releases/tag/v2.3.0-beta.8",
+      "body": "- **Go(cgo) / MinGW 静态链接补齐多平台**：在上个版本 Windows x64 的基础上，新增 **Windows arm64** GNU 静态库（`JadeView_gnu_arm64_*.zip`，采用与 Go `windows/arm64` cgo 一致的 llvm-mingw/clang 工具链）。至此 cgo 静态链接覆盖 **Windows x64 / Windows arm64 / Linux x64 / Linux arm64** 四个平台。\n- **Linux 发行包补充链接清单**：`JadeView_linux_x64/arm64_*.tar.gz` 内新增 `native-static-libs.txt`，Linux 端 cgo 静态链接所需的系统库一并给出（包内本就含 `libJadeView.a`，可直接静态链接，无需 `.so`）。\n- **发布流程对新目标容错**：新增的 Windows arm64 目标即使构建失败，也不影响已稳定的 Windows(MSVC) / Linux / Windows-x64(GNU) 产物正常发布。\n\n  <br />\n\n\n- 原有 MSVC 版 `JadeView.dll` / `JadeView.lib`（C/C++ 接入）及各平台产物与 ABI **保持不变**。\n- 各 GNU/cgo 包内均附带 `libJadeView.a`、头文件、`native-static-libs.txt`、`WebView2Loader.dll`（Windows 运行时必需）及接入说明。\\n\\n---\\n本版本的文档参考在 beta 目录中\n"
+    },
+    {
+      "tag_name": "v2.3.0-beta.7",
+      "name": "v2.3.0-beta.7 (Build 26F12)",
+      "published_at": "2026-06-29T15:01:31Z",
+      "prerelease": true,
+      "html_url": "https://github.com/JadeViewDocs/JadeView/releases/tag/v2.3.0-beta.7",
+      "gitee_url": "https://gitee.com/ilinxuan/JadeView_library/releases/tag/v2.3.0-beta.7",
+      "body": "- **新增 Go(cgo) / MinGW-w64 静态链接支持**：发行包新增 `JadeView_gnu_x64_v*.zip`，提供 GNU 格式静态库 `libJadeView.a`（64 位），可直接静态链入 Go(cgo) / MinGW 程序，无需随程序携带 `JadeView.dll`。解决了 MinGW 工具链无法链接 MSVC 版 `.lib` 的问题。包内同时附带头文件、cgo 链接所需的系统库清单、`WebView2Loader.dll` 及接入说明文档。\n- 原有 MSVC 版 `JadeView.dll` / `JadeView.lib`（C/C++ 接入）的产物与 ABI **保持不变**，与新增的 GNU 静态库两套发行物并存、互不影响。\n- **WebView2 依赖说明**：cgo 集成时 `WebView2Loader.dll` 为运行时必需（需随程序一起分发），目标机仍需安装 WebView2 Runtime——与既有接入方式一致。\n\n  <br />\n\n\n- **头文件跨编译器一致性**：头文件在 MSVC 与 MinGW 下保持一致的类型声明与调用约定，修正了 `jade_ntp_now` 等接口在部分编译器下的返回类型声明问题。C/C++ 与 cgo 接入方均无需再自行修改头文件。\\n\\n---\\n本版本的文档参考在 beta 目录中\n"
+    },
     {
       "tag_name": "v2.3.0-beta.6",
       "name": "v2.3.0-beta.6 (Build 26F11)",
