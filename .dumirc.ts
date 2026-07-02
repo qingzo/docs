@@ -8,9 +8,31 @@ export default defineConfig({
   outputPath: 'dist',
   // 浏览器标签页图标
   favicons: ['/favicon.png'],
-  // Algolia DocSearch 站点归属验证：构建期把该 meta 写进每个 HTML 的 <head>，
-  // 验证爬虫抓 jade.run 首页 raw HTML 时即可读到（SPA 也没问题，head 是静态的）。
-  metas: [{ name: 'algolia-site-verification', content: '70B112895FD5CB2F' }],
+  // SEO meta 标签：Algolia 验证 + 全局 SEO 优化
+  metas: [
+    // Algolia DocSearch 站点归属验证
+    { name: 'algolia-site-verification', content: '70B112895FD5CB2F' },
+    // 基础 SEO
+    { name: 'description', content: 'JadeView - 现代化跨平台开发框架，提供高性能、易用的 API 和工具链，支持 Web、桌面端和移动端开发' },
+    { name: 'keywords', content: 'JadeView, 跨平台框架, JavaScript, TypeScript, React, Electron,tauri,webview2,edgewebview,edge 开发工具, API, SDK, 文档' },
+    { name: 'author', content: 'JadeView Team' },
+    // Open Graph (Facebook/LinkedIn)
+    { property: 'og:type', content: 'website' },
+    { property: 'og:site_name', content: 'JadeView' },
+    { property: 'og:title', content: 'JadeView - 现代化跨平台开发框架' },
+    { property: 'og:description', content: 'JadeView - 现代化跨平台开发框架，提供高性能、易用的 API 和工具链，支持 Web、桌面端和移动端开发' },
+    { property: 'og:image', content: 'https://jade.run/logo/light.svg' },
+    { property: 'og:locale', content: 'zh_CN' },
+    { property: 'og:locale:alternate', content: 'en_US' },
+    // Twitter Card
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: 'JadeView - 现代化跨平台开发框架' },
+    { name: 'twitter:description', content: 'JadeView - 现代化跨平台开发框架，提供高性能、易用的 API 和工具链，支持 Web、桌面端和移动端开发' },
+    { name: 'twitter:image', content: 'https://jade.run/logo/light.svg' },
+    // 其他
+    { name: 'theme-color', content: '#007ee5' },
+    { name: 'color-scheme', content: 'light dark' },
+  ],
   // 站点主机名：lobehub 主题用它生成 canonical / og:url / JSON-LD；不设会回退成
   // 'https://lobehub.com'（把 SEO 权重导向 lobehub、且 Algolia 因 canonical 跨域而拒爬）。
   // 设了同时让 dumi 生成 sitemap.xml。注意 lobehub 的 canonical 只用 hostname(根)，
